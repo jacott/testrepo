@@ -19,6 +19,6 @@ jobs:
 
     - name: Print a greeting
       env:
-        URL: ${{github.event.issue.body}}
+        BODY: ${{github.event.issue.body}}
       run: |
-         $URL
+        echo body $BODY
