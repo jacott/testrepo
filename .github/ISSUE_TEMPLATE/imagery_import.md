@@ -1,7 +1,6 @@
 ---
 name: Imagery Import
 about: Request that a new imagery set be processed and imported
-labels: import-imagery
 ---
 
 ### Imagery details
