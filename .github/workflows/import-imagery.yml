@@ -1,24 +1,36 @@
 name: Import imagery
 
 on:
-  issues:
-    types: [labeled]
+  pull_request:
+    paths:
+    - 'config/imagery/*.json'
+  push:
+    paths:
+    - '**'
 
 jobs:
-  import-imagery:
-    if: github.event.label.name == 'import-imagery'
-
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Use Node.js 12.x
-      uses: actions/setup-node@v2.1.1
-      with:
-        node-version: "12.x"
-        registry-url: https://registry.npmjs.org
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-    - name: Print a greeting
-      env:
-        BODY: ${{github.event.issue.body}}
-      run: |
-        echo body $BODY
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: "12.x"
+          registry-url: https://registry.npmjs.org
+
+      - name: run test config
+        if: github.ref != 'refs/heads/master' && github.event_name == 'pull_request'
+        run: |
+          git diff --name-only origin/master HEAD
+          echo node ./build/configure.imagery.js import -t pr-${{ github.event.number }}
+
+      - name: run commit config
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        run: |
+          git diff --name-only HEAD^1 HEAD
+          echo node ./build/configure.imagery.js import -t pr-"`git show -s --format=%s ${{ github.sha}}|sed -e  's/^.*#//' -e 's/[)].*$//'`" --commit
